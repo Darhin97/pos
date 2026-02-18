@@ -24,20 +24,19 @@ export const PageHeader = ({ title, subtitle, breadcrumb }: PageHeaderProps) => 
 
       <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-5">
         <h2 className="text-base font-medium text-slate-900">List Product</h2>
-        <div className="flex gap-2">
-          <button className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-lg text-slate-700 hover:bg-gray-50 transition-colors text-xs font-medium">
-            <Icon name="ScanLine" size={16} />
-            <span>Scan Barcode</span>
-          </button>
-          <div className="relative">
+        <div className="flex gap-2 flex-1 xl:flex-none">
+          <div className="relative flex-1 xl:w-80">
             <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center text-gray-400">
               <Icon name="Search" size={16} />
             </div>
             <input
               type="text"
-              placeholder="Search..."
-              className="pl-9 pr-3 py-2 bg-white border border-gray-200 rounded-lg text-slate-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 w-full sm:w-56 text-xs"
+              placeholder="Search or scan barcode..."
+              className="pl-9 pr-10 py-2 bg-white border border-gray-200 rounded-lg text-slate-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 w-full text-xs"
             />
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300">
+              <Icon name="ScanLine" size={16} />
+            </div>
           </div>
         </div>
       </div>

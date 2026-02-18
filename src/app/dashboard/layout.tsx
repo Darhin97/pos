@@ -11,7 +11,7 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const router = useRouter();
 
-  const activePage = pathname.split("/").pop() || "overview";
+  const activePage = pathname.replace(/^\/dashboard\/?/, "") || "overview";
 
   const handlePageChange = (page: string) => {
     router.push(`/dashboard/${page}`);

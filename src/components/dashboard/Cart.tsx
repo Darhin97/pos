@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Icon } from "../shared/Icon";
 import { CartItem } from "./CartItem";
 import { DiscountModal } from "./DiscountModal";
@@ -12,6 +13,7 @@ import { CART_ITEMS, CUSTOMERS } from "@/lib/data";
 import { Customer, HeldSale } from "@/lib/types";
 
 export const Cart = () => {
+  const router = useRouter();
   const [isDiscountModalOpen, setIsDiscountModalOpen] = useState(false);
   const [isPromoCodeModalOpen, setIsPromoCodeModalOpen] = useState(false);
   const [isAddCustomerModalOpen, setIsAddCustomerModalOpen] = useState(false);
@@ -345,7 +347,10 @@ export const Cart = () => {
         </div>
 
         {/* Pay button */}
-        <button className="w-full py-4 bg-[#6366f1] hover:bg-[#5558e3] text-white rounded-lg font-semibold transition-colors flex items-center justify-between px-6 text-lg">
+        <button
+          onClick={() => router.push("/dashboard/orders/review")}
+          className="w-full py-4 bg-[#6366f1] hover:bg-[#5558e3] text-white rounded-lg font-semibold transition-colors flex items-center justify-between px-6 text-lg"
+        >
           <span>Pay</span>
           <span className="text-base">{totalItems} items</span>
           <span>GH₵{(subtotal - totalDiscount + tax).toFixed(2)}</span>
