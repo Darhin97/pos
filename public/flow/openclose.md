@@ -1,11 +1,19 @@
 Open and close page
 
-When open shows open details that is a form to enter initial amount and option notes
-Set an opening float to open the register and make a sale;
-Before a cashier starts shift he need to enter the open cash at hand;
-And when he selects open it redirects to the orders page;
+W
 
-When close shows details of the close page
-Since open is set at the beginning of a shift the page only shows the close details
-After a shift the cashier needs to make a close
-Close your register to finalize payments and sales for the day.so the cashier needs to check the cashed at head to the total sales made and make the close
+- Add RegisterShift, ShiftSummary, and PaymentBreakdown types
+- Create OpenRegisterModal for shift opening with float entry
+- Create CloseRegisterModal for shift closing with cash reconciliation
+- Implement ShiftContext for managing shift state with localStorage
+- Add register management page (/dashboard/register)
+- Add shift guard to orders page (redirects if no open shift)
+- Update sidebar with shift status indicator
+- Redirect orders/open-close to register page
+
+Features:
+
+- Cashiers must open register with initial float before making sales
+- Close register requires actual cash count with discrepancy detection
+- Shift data persists in localStorage for offline-first support
+- Real-time shift status displayed in sidebar

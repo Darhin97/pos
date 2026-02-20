@@ -22,6 +22,8 @@
 # production
 /build
 
+/public/flow/*
+
 # misc
 .DS_Store
 *.pem
