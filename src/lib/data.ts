@@ -1,4 +1,4 @@
-import { Product, CartItem, Customer } from "./types";
+import { Product, CartItem, Customer, Quote } from "./types";
 
 export const PRODUCTS: Product[] = [
   {
@@ -135,5 +135,82 @@ export const CUSTOMERS: Customer[] = [
     email: "ewilson@email.com",
     customerId: "Emma-M3QW",
     tags: ["All customers", "VIP"],
+  },
+];
+
+export const QUOTES: Quote[] = [
+  {
+    id: 1,
+    quoteNumber: "1",
+    customer: {
+      id: "6",
+      name: "Jimmy Green",
+      email: "test@mail.com",
+      customerId: "Jimmy-84CC",
+      tags: ["All customers"],
+    },
+    servedBy: {
+      name: "john brown",
+      outlet: "Main Branch",
+    },
+    note: "",
+    subtotal: 880.0,
+    total: 880.0,
+    tax: 0,
+    status: "Open",
+    items: [
+      { id: 1, name: "Denim Fabric Jacket", price: 45.95, qty: 2 },
+      { id: 2, name: "Short Dress Asymetric", price: 29.9, qty: 3 },
+    ],
+    createdAt: new Date("2026-02-18T19:04:00").getTime(),
+  },
+  {
+    id: 2,
+    quoteNumber: "2",
+    customer: {
+      id: "3",
+      name: "Sarah Johnson",
+      email: "sjohnson@email.com",
+      customerId: "Sarah-P9XN",
+      tags: ["All customers"],
+    },
+    servedBy: {
+      name: "john brown",
+      outlet: "Main Branch",
+    },
+    note: "Bulk order discount requested",
+    subtotal: 349.5,
+    total: 349.5,
+    tax: 0,
+    status: "Open",
+    items: [
+      { id: 3, name: "Basic Cropped T-Shirt", price: 17.9, qty: 5 },
+      { id: 5, name: "Flowing Pinstripe Pants", price: 49.9, qty: 4 },
+    ],
+    createdAt: new Date("2026-02-17T14:22:00").getTime(),
+  },
+  {
+    id: 3,
+    quoteNumber: "3",
+    customer: {
+      id: "5",
+      name: "Emma Wilson",
+      email: "ewilson@email.com",
+      customerId: "Emma-M3QW",
+      tags: ["All customers", "VIP"],
+    },
+    servedBy: {
+      name: "alice kim",
+      outlet: "West Branch",
+    },
+    note: "",
+    subtotal: 119.7,
+    total: 119.7,
+    tax: 0,
+    status: "Closed",
+    items: [
+      { id: 6, name: "Half-Moon Crossbody Bag", price: 29.9, qty: 4 },
+    ],
+    createdAt: new Date("2026-02-15T10:00:00").getTime(),
   },
 ];

@@ -1,16 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "../shared/Icon";
-import { CartItem } from "./CartItem";
+import { CartItem as CartItemComponent } from "./CartItem";
 import { DiscountModal } from "./DiscountModal";
 import { PromoCodeModal } from "./PromoCodeModal";
 import { CustomerDropdown } from "./CustomerDropdown";
 import { AddCustomerModal } from "./AddCustomerModal";
 import { HoldSaleModal } from "./HoldSaleModal";
+import { CreateQuoteModal } from "./CreateQuoteModal";
 import { CART_ITEMS, CUSTOMERS } from "@/lib/data";
-import { Customer, HeldSale } from "@/lib/types";
+import { Customer, HeldSale, Quote, CartItem } from "@/lib/types";
 
 export const Cart = () => {
   const router = useRouter();
@@ -19,6 +20,7 @@ export const Cart = () => {
   const [isAddCustomerModalOpen, setIsAddCustomerModalOpen] = useState(false);
   const [isMoreActionsOpen, setIsMoreActionsOpen] = useState(false);
   const [isHoldSaleModalOpen, setIsHoldSaleModalOpen] = useState(false);
+  const [isCreateQuoteModalOpen, setIsCreateQuoteModalOpen] = useState(false);
   const [isRetrieveSaleOpen, setIsRetrieveSaleOpen] = useState(false);
   const [discount, setDiscount] = useState<{
     type: "percentage" | "amount";
@@ -28,8 +30,47 @@ export const Cart = () => {
   const [customerSearch, setCustomerSearch] = useState("");
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [newCustomerName, setNewCustomerName] = useState("");
-  const [cartItems, setCartItems] = useState(CART_ITEMS);
+  const [cartItems, setCartItems] = useState<CartItem[]>(CART_ITEMS);
   const [heldSales, setHeldSales] = useState<HeldSale[]>([]);
+
+  useEffect(() => {
+    // Check for retrieved quote data
+    const retrievedQuoteData = localStorage.getItem("retrievedQuote");
+    if (retrievedQuoteData) {
+      const quote: Quote = JSON.parse(retrievedQuoteData);
+
+      // Convert quote items to cart items
+      const quoteCartItems: CartItem[] = quote.items.map((item) => ({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        category: "", // Quote items don't have category, can be empty
+        size: "M", // Default size, can be updated if quote items have size
+        color: null,
+        qty: item.qty,
+        image: "", // Quote items don't have image, can be empty or fetch from products
+      }));
+
+      // Load quote data into cart
+      setCartItems(quoteCartItems);
+      setSelectedCustomer(quote.customer);
+      setCustomerSearch(quote.customer.name);
+
+      // Load discount and promo code if available
+      if (quote.discount) {
+        setDiscount(quote.discount);
+      }
+      if (quote.promoCode) {
+        setPromoCode(quote.promoCode);
+      }
+
+      // Clear the retrieved quote from localStorage
+      localStorage.removeItem("retrievedQuote");
+
+      // Show a notification (you could use a toast library)
+      alert(`Quote ${quote.quoteNumber} loaded into cart`);
+    }
+  }, []);
 
   const totalItems = cartItems.reduce((sum, item) => sum + item.qty, 0);
   const subtotal = cartItems.reduce(
@@ -232,9 +273,8 @@ export const Cart = () => {
                   </button>
                   <button
                     onClick={() => {
-                      // Create quote logic
                       setIsMoreActionsOpen(false);
-                      alert("Create quote clicked");
+                      setIsCreateQuoteModalOpen(true);
                     }}
                     className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
                   >
@@ -277,7 +317,7 @@ export const Cart = () => {
         <div className="space-y-4 py-4">
           {cartItems.length > 0 ? (
             cartItems.map((item) => (
-              <CartItem key={item.id} item={item} />
+              <CartItemComponent key={item.id} item={item} />
             ))
           ) : (
             <div className="flex flex-col items-center justify-center py-12 text-gray-400">
@@ -386,6 +426,30 @@ export const Cart = () => {
         isOpen={isHoldSaleModalOpen}
         onClose={() => setIsHoldSaleModalOpen(false)}
         onSave={handleHoldSale}
+      />
+
+      {/* Create Quote Modal */}
+      <CreateQuoteModal
+        isOpen={isCreateQuoteModalOpen}
+        onClose={() => setIsCreateQuoteModalOpen(false)}
+        onCreateQuote={(data) => {
+          // Prepare quote data with all cart information
+          const quoteData = {
+            ...data,
+            items: cartItems,
+            subtotal,
+            total: subtotal - totalDiscount + tax,
+            discount,
+            promoCode,
+            tax,
+          };
+
+          // Store quote data in localStorage for confirmation page
+          localStorage.setItem("pendingQuote", JSON.stringify(quoteData));
+
+          // Navigate to confirmation page
+          router.push("/dashboard/orders/quote-confirmation");
+        }}
       />
     </aside>
   );

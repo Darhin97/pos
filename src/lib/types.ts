@@ -35,3 +35,99 @@ export interface HeldSale {
   customer: Customer | null;
   timestamp: number;
 }
+
+export interface QuoteItem {
+  id: number;
+  name: string;
+  price: number;
+  qty: number;
+}
+
+export interface Quote {
+  id: number;
+  quoteNumber: string;
+  customer: Customer;
+  servedBy: {
+    name: string;
+    outlet: string;
+  };
+  note?: string;
+  total: number;
+  status: "Open" | "Closed" | "Expired" | "Converted";
+  items: QuoteItem[];
+  createdAt: number;
+  discount?: {
+    type: "percentage" | "amount";
+    value: number;
+  };
+  promoCode?: string;
+  subtotal: number;
+  tax: number;
+}
+
+export interface NewCustomerForm {
+  firstName: string;
+  lastName: string;
+  contact: string;
+  email: string;
+  quoteNote?: string;
+}
+
+export interface QuoteCreationData {
+  customer: Customer | NewCustomerForm;
+  isNew: boolean;
+  quoteNote?: string;
+  items: CartItem[];
+  subtotal: number;
+  total: number;
+  discount?: {
+    type: "percentage" | "amount";
+    value: number;
+  };
+  promoCode?: string;
+  tax: number;
+}
+
+export type ShiftStatus = "open" | "closed";
+
+export type PaymentMethod = "cash" | "card" | "mobile" | "other";
+
+export interface RegisterShift {
+  id: string;
+  register_id: string;
+  cashier_id: string;
+  tenant_id: string;
+  opened_at: number;
+  opened_by: string;
+  opening_float: number;
+  opening_notes?: string;
+  closed_at?: number;
+  closed_by?: string;
+  closing_cash?: number;
+  expected_cash?: number;
+  closing_notes?: string;
+  status: ShiftStatus;
+  sales_total: number;
+  transaction_count: number;
+  discrepancy?: number;
+}
+
+export interface PaymentBreakdown {
+  cash: number;
+  card: number;
+  mobile: number;
+  other: number;
+}
+
+export interface ShiftSummary {
+  shift_id: string;
+  opening_float: number;
+  sales_total: number;
+  expected_cash: number;
+  actual_cash?: number;
+  discrepancy?: number;
+  transaction_count: number;
+  payment_breakdown: PaymentBreakdown;
+  opened_at: number;
+  closed_at?: number;
+}

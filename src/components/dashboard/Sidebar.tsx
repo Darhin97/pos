@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Logo } from "../shared/Logo";
 import { Icon } from "../shared/Icon";
 import { SidebarItem } from "./SidebarItem";
+import { useShift } from "@/contexts/ShiftContext";
 
 interface SidebarProps {
   activePage: string;
@@ -16,6 +17,11 @@ const ORDER_PAGES = ["orders", "orders/open-close", "orders/quotes", "orders/sal
 export const Sidebar = ({ activePage, setPage, onLogout }: SidebarProps) => {
   const isInOrders = ORDER_PAGES.includes(activePage) || activePage.startsWith("orders/");
   const [ordersExpanded, setOrdersExpanded] = useState(isInOrders);
+  const { isShiftOpen, currentShift } = useShift();
+
+  const formatCurrency = (amount: number) => {
+    return `GH₵ ${amount.toFixed(2)}`;
+  };
 
   const handleOrdersClick = () => {
     if (!ordersExpanded) {
@@ -196,7 +202,43 @@ export const Sidebar = ({ activePage, setPage, onLogout }: SidebarProps) => {
         </div>
       </nav>
 
-      <div className="p-3 mt-auto border-t border-gray-200">
+      {/* Shift Status Indicator */}
+      <div className="p-3 mt-auto">
+        {isShiftOpen && currentShift ? (
+          <div
+            onClick={() => setPage("register")}
+            className="mb-2 p-3 rounded-lg border border-green-200 bg-green-50 cursor-pointer hover:bg-green-100 transition-colors"
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-xs font-semibold text-green-700">Shift Active</span>
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-green-600">Float</span>
+                <span className="text-green-700 font-medium">{formatCurrency(currentShift.opening_float)}</span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-green-600">Sales</span>
+                <span className="text-green-700 font-medium">{formatCurrency(currentShift.sales_total)}</span>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div
+            onClick={() => setPage("register")}
+            className="mb-2 p-3 rounded-lg border border-gray-200 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <Icon name="Lock" size={14} className="text-gray-500" />
+              <span className="text-xs font-semibold text-gray-600">Register Closed</span>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">Click to open register</p>
+          </div>
+        )}
+      </div>
+
+      <div className="p-3 pt-0 border-t border-gray-200">
         <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
           <img
             src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80"
