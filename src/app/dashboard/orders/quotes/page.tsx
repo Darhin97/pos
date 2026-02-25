@@ -3,6 +3,8 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/shared/Icon";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { ContentContainer } from "@/components/shared/ContentContainer";
 import { QUOTES } from "@/lib/data";
 import { Quote } from "@/lib/types";
 
@@ -113,22 +115,18 @@ export default function QuotesPage() {
 
   return (
     <div className="flex flex-col h-full overflow-auto">
-      {/* Page header */}
-      <div className="flex-none px-8 pt-8 pb-0">
-        <div className="flex items-center gap-2 text-xs text-gray-400 mb-3">
-          <span>Orders</span>
-          <Icon name="ChevronRight" size={12} />
-          <span className="text-gray-700 font-medium">Quotes</span>
-        </div>
-        <h1 className="text-2xl font-semibold text-slate-900 mb-1">Quotes</h1>
-        <p className="text-sm text-gray-500 mb-6">
-          View or process quotes.
-        </p>
-      </div>
+      <PageHeader
+        breadcrumbs={[
+          { label: "Orders" },
+          { label: "Quotes" }
+        ]}
+        title="Quotes"
+        description="View or process quotes."
+      />
 
       {/* Filter bar */}
       <div className="flex-none px-8 pb-4">
-        <div className="w-4/5 mx-auto">
+        <ContentContainer>
         <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
           <div className="flex flex-wrap items-end gap-3">
             {/* Status */}
@@ -205,12 +203,12 @@ export default function QuotesPage() {
             </div>
           </div>
         </div>
-        </div>
+        </ContentContainer>
       </div>
 
       {/* Results */}
       <div className="flex-1 px-8 pb-8 min-h-0">
-        <div className="w-4/5 mx-auto h-full flex flex-col">
+        <ContentContainer className="h-full flex flex-col">
         {/* Count */}
         <p className="text-xs text-gray-500 mb-3">{resultLabel}</p>
 
@@ -371,7 +369,7 @@ export default function QuotesPage() {
             );
           })}
         </div>
-        </div>
+        </ContentContainer>
       </div>
     </div>
   );

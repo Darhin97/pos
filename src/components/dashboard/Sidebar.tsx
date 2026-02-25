@@ -13,10 +13,13 @@ interface SidebarProps {
 }
 
 const ORDER_PAGES = ["orders", "orders/open-close", "orders/quotes", "orders/sale-history"];
+const PRODUCT_PAGES = ["products", "products/tags", "products/categories", "products/suppliers", "products/brands", "products/promotions"];
 
 export const Sidebar = ({ activePage, setPage, onLogout }: SidebarProps) => {
   const isInOrders = ORDER_PAGES.includes(activePage) || activePage.startsWith("orders/");
+  const isInProducts = PRODUCT_PAGES.includes(activePage) || activePage.startsWith("products/");
   const [ordersExpanded, setOrdersExpanded] = useState(isInOrders);
+  const [productsExpanded, setProductsExpanded] = useState(isInProducts);
   const { isShiftOpen, currentShift } = useShift();
 
   const formatCurrency = (amount: number) => {
@@ -29,6 +32,15 @@ export const Sidebar = ({ activePage, setPage, onLogout }: SidebarProps) => {
       setPage("orders");
     } else {
       setOrdersExpanded(false);
+    }
+  };
+
+  const handleProductsClick = () => {
+    if (!productsExpanded) {
+      setProductsExpanded(true);
+      setPage("products");
+    } else {
+      setProductsExpanded(false);
     }
   };
 
@@ -152,12 +164,102 @@ export const Sidebar = ({ activePage, setPage, onLogout }: SidebarProps) => {
             Inventory
           </div>
           <ul className="space-y-0.5">
-            <SidebarItem
-              icon="Shirt"
-              label="Products"
-              active={activePage === "products"}
-              onClick={() => setPage("products")}
-            />
+            {/* Products with sub-navigation */}
+            <li className="cursor-pointer">
+              <div
+                onClick={handleProductsClick}
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors group ${
+                  isInProducts && activePage === "products"
+                    ? "bg-violet-600 text-white shadow-sm"
+                    : isInProducts
+                    ? "text-violet-600 bg-violet-50"
+                    : "text-gray-500 hover:bg-gray-50"
+                }`}
+              >
+                <Icon
+                  name="Shirt"
+                  size={18}
+                  className={isInProducts ? "" : "group-hover:text-gray-700"}
+                />
+                <span className="font-medium text-sm flex-1">Products</span>
+                <Icon
+                  name={productsExpanded ? "ChevronDown" : "ChevronRight"}
+                  size={14}
+                  className={isInProducts ? "" : "group-hover:text-gray-700"}
+                />
+              </div>
+
+              {productsExpanded && (
+                <ul className="mt-0.5 ml-4 pl-3 border-l border-gray-200 space-y-0.5">
+                  <li
+                    onClick={() => setPage("products")}
+                    className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm transition-colors cursor-pointer ${
+                      activePage === "products"
+                        ? "bg-violet-600 text-white font-medium"
+                        : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+                    }`}
+                  >
+                    <Icon name="Shirt" size={15} />
+                    Products
+                  </li>
+                  <li
+                    onClick={() => setPage("products/tags")}
+                    className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm transition-colors cursor-pointer ${
+                      activePage === "products/tags"
+                        ? "bg-violet-600 text-white font-medium"
+                        : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+                    }`}
+                  >
+                    <Icon name="Tag" size={15} />
+                    Product Tags
+                  </li>
+                  <li
+                    onClick={() => setPage("products/categories")}
+                    className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm transition-colors cursor-pointer ${
+                      activePage === "products/categories"
+                        ? "bg-violet-600 text-white font-medium"
+                        : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+                    }`}
+                  >
+                    <Icon name="LayoutGrid" size={15} />
+                    Product Categories
+                  </li>
+                  <li
+                    onClick={() => setPage("products/suppliers")}
+                    className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm transition-colors cursor-pointer ${
+                      activePage === "products/suppliers"
+                        ? "bg-violet-600 text-white font-medium"
+                        : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+                    }`}
+                  >
+                    <Icon name="Truck" size={15} />
+                    Suppliers
+                  </li>
+                  <li
+                    onClick={() => setPage("products/brands")}
+                    className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm transition-colors cursor-pointer ${
+                      activePage === "products/brands"
+                        ? "bg-violet-600 text-white font-medium"
+                        : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+                    }`}
+                  >
+                    <Icon name="Award" size={15} />
+                    Brands
+                  </li>
+                  <li
+                    onClick={() => setPage("products/promotions")}
+                    className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm transition-colors cursor-pointer ${
+                      activePage === "products/promotions"
+                        ? "bg-violet-600 text-white font-medium"
+                        : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+                    }`}
+                  >
+                    <Icon name="Percent" size={15} />
+                    Promotions
+                  </li>
+                </ul>
+              )}
+            </li>
           </ul>
         </div>
 

@@ -6,6 +6,8 @@ import { useShift } from "@/contexts/ShiftContext";
 import { OpenRegisterModal } from "@/components/dashboard/OpenRegisterModal";
 import { CloseRegisterModal } from "@/components/dashboard/CloseRegisterModal";
 import { Icon } from "@/components/shared/Icon";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { ContentContainer } from "@/components/shared/ContentContainer";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -43,15 +45,19 @@ export default function RegisterPage() {
   const shiftSummary = getShiftSummary();
 
   return (
-    <div className="flex-1 overflow-y-auto">
-      <div className="p-6 max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-slate-900">Register Management</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Manage your register shifts and cash operations
-          </p>
-        </div>
+    <div className="flex flex-col h-full overflow-auto">
+      <PageHeader
+        breadcrumbs={[
+          { label: "Settings" },
+          { label: "Register" }
+        ]}
+        title="Register Management"
+        description="Manage your register shifts and cash operations."
+      />
+
+      {/* Content */}
+      <div className="flex-1 px-8 pb-8 min-h-0">
+        <ContentContainer>
 
         {/* Status Card */}
         {isShiftOpen && currentShift && shiftSummary ? (
@@ -167,6 +173,7 @@ export default function RegisterPage() {
             </button>
           </div>
         )}
+        </ContentContainer>
       </div>
 
       {/* Modals */}

@@ -7,6 +7,14 @@ export interface Product {
   sizes: string[];
   colors: string[];
   isGrayscale?: boolean;
+  // Additional fields for product management
+  sku?: string;
+  brand?: string;
+  supplier?: string;
+  stock?: number | "∞";
+  active?: boolean;
+  createdAt?: string;
+  variants?: number;
 }
 
 export interface CartItem {
