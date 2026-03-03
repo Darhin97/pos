@@ -1,4 +1,4 @@
-import { Product, CartItem, Customer, Quote } from "./types";
+import { Product, CartItem, Customer, Quote, Brand, Tag, Category, Supplier, Promotion } from "./types";
 
 export const PRODUCTS: Product[] = [
   {
@@ -281,5 +281,213 @@ export const QUOTES: Quote[] = [
       { id: 6, name: "Half-Moon Crossbody Bag", price: 29.9, qty: 4 },
     ],
     createdAt: new Date("2026-02-15T10:00:00").getTime(),
+  },
+];
+
+export const BRANDS: Brand[] = [
+  {
+    id: 1,
+    name: "Mars",
+    description: "",
+    productCount: 2,
+  },
+  {
+    id: 2,
+    name: "Urban",
+    description: "Modern urban streetwear and casual fashion",
+    productCount: 1,
+  },
+  {
+    id: 3,
+    name: "Basics Co",
+    description: "Essential everyday clothing basics",
+    productCount: 1,
+  },
+  {
+    id: 4,
+    name: "STWD",
+    description: "Outdoor and weather protection apparel",
+    productCount: 1,
+  },
+  {
+    id: 5,
+    name: "Elegance",
+    description: "Sophisticated and elegant fashion pieces",
+    productCount: 1,
+  },
+  {
+    id: 6,
+    name: "Chic",
+    description: "Contemporary chic fashion for modern lifestyle",
+    productCount: 1,
+  },
+];
+
+export const TAGS: Tag[] = [
+  {
+    id: 1,
+    name: "New Arrival",
+    productCount: 3,
+  },
+  {
+    id: 2,
+    name: "Sale",
+    productCount: 2,
+  },
+  {
+    id: 3,
+    name: "Featured",
+    productCount: 4,
+  },
+  {
+    id: 4,
+    name: "Bestseller",
+    productCount: 5,
+  },
+  {
+    id: 5,
+    name: "Seasonal",
+    productCount: 2,
+  },
+  {
+    id: 6,
+    name: "Limited Edition",
+    productCount: 1,
+  },
+];
+
+export const CATEGORIES: Category[] = [
+  {
+    id: 1,
+    name: "Bakery",
+    productCount: 1,
+  },
+  {
+    id: 2,
+    name: "Beverages",
+    productCount: 2,
+  },
+  {
+    id: 3,
+    name: "Men",
+    productCount: 3,
+  },
+  {
+    id: 4,
+    name: "Women",
+    productCount: 2,
+  },
+  {
+    id: 5,
+    name: "Accessories",
+    productCount: 0,
+  },
+];
+
+export const SUPPLIERS: Supplier[] = [
+  {
+    id: 1,
+    name: "Nanna's Kitchen",
+    description: "Artisanal bakery and confectionery supplier",
+    representative: "Anna Thompson",
+    contact: "+233 24 123 4567",
+    productCount: 1,
+  },
+  {
+    id: 2,
+    name: "Jimmys Roasting Beans",
+    description: "Premium coffee roasters and beverage suppliers",
+    representative: "Jimmy Martinez",
+    contact: "+233 24 234 5678",
+    productCount: 1,
+  },
+  {
+    id: 3,
+    name: "Summer Sun",
+    description: "Fresh juice and beverage distributor",
+    representative: "Sarah Williams",
+    contact: "+233 24 345 6789",
+    productCount: 1,
+  },
+  {
+    id: 4,
+    name: "Fashion Hub",
+    description: "Wholesale fashion and apparel supplier",
+    representative: "David Chen",
+    contact: "+233 24 456 7890",
+    productCount: 3,
+  },
+  {
+    id: 5,
+    name: "Outdoor Gear",
+    description: "Outdoor and weather protection apparel",
+    representative: "Michael Brown",
+    contact: "+233 24 567 8901",
+    productCount: 1,
+  },
+  {
+    id: 6,
+    name: "Textile World",
+    description: "Quality textile and fabric supplier",
+    representative: "Emily Davis",
+    contact: "+233 24 678 9012",
+    productCount: 1,
+  },
+];
+
+export const PROMOTIONS: Promotion[] = [
+  {
+    id: 1,
+    name: "Weekend Flash Sale",
+    description: "15% off all items this weekend",
+    scheduleType: "one-time",
+    startDate: "2026-03-06",
+    endDate: "2026-03-08",
+    discountType: "percentage",
+    discountValue: 15,
+    productScope: "all",
+    active: true,
+    createdAt: "2026-03-01",
+    status: "upcoming",
+  },
+  {
+    id: 2,
+    name: "Tuesday Special",
+    description: "GH₵5 off on beverages every Tuesday",
+    scheduleType: "recurring",
+    daysOfWeek: [2], // Tuesday
+    discountType: "fixed",
+    discountValue: 5,
+    productScope: "specific",
+    productFilters: [
+      {
+        type: "category",
+        operator: "include",
+        values: ["Beverages"],
+      },
+    ],
+    active: true,
+    createdAt: "2026-02-20",
+    status: "current",
+  },
+  {
+    id: 3,
+    name: "Weekend Fashion Discount",
+    description: "20% off men's and women's clothing",
+    scheduleType: "recurring",
+    daysOfWeek: [5, 6], // Friday, Saturday
+    discountType: "percentage",
+    discountValue: 20,
+    productScope: "specific",
+    productFilters: [
+      {
+        type: "category",
+        operator: "include",
+        values: ["Men", "Women"],
+      },
+    ],
+    active: true,
+    createdAt: "2026-02-15",
+    status: "current",
   },
 ];

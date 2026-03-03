@@ -139,18 +139,6 @@ export const Sidebar = ({ activePage, setPage, onLogout }: SidebarProps) => {
             </li>
 
             <SidebarItem
-              icon="LayoutGrid"
-              label="Categories"
-              active={activePage === "categories"}
-              onClick={() => setPage("categories")}
-            />
-            <SidebarItem
-              icon="Tag"
-              label="Promos"
-              active={activePage === "promos"}
-              onClick={() => setPage("promos")}
-            />
-            <SidebarItem
               icon="Wallet"
               label="Transaction"
               active={activePage === "transactions"}

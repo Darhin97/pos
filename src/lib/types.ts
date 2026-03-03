@@ -139,3 +139,58 @@ export interface ShiftSummary {
   opened_at: number;
   closed_at?: number;
 }
+
+export interface Brand {
+  id: number;
+  name: string;
+  description?: string;
+  productCount: number;
+}
+
+export interface Tag {
+  id: number;
+  name: string;
+  productCount: number;
+}
+
+export interface Category {
+  id: number;
+  name: string;
+  productCount: number;
+}
+
+export interface Supplier {
+  id: number;
+  name: string;
+  description?: string;
+  representative?: string;
+  contact?: string;
+  productCount: number;
+}
+
+export interface ProductFilter {
+  type: "tag" | "category" | "brand" | "supplier" | "sku";
+  operator: "include" | "exclude";
+  values: string[];
+}
+
+export interface Promotion {
+  id: number;
+  tenant_id?: string;
+  name: string;
+  description: string;
+  scheduleType: "one-time" | "recurring";
+  // One-time schedule
+  startDate?: string;
+  endDate?: string;
+  // Recurring schedule
+  daysOfWeek?: number[]; // [0-6] Sunday-Saturday
+  discountType: "percentage" | "fixed";
+  discountValue: number;
+  productScope: "all" | "specific";
+  productFilters?: ProductFilter[];
+  active: boolean;
+  createdAt: string;
+  updatedAt?: string;
+  status?: "current" | "upcoming" | "past";
+}
