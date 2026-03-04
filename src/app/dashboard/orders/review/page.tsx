@@ -212,9 +212,7 @@ export default function OrderReviewPage() {
                   onClick={() => {
                     const newMethod = selectedMethod === "card" ? null : "card";
                     setSelectedMethod(newMethod);
-                    if (newMethod !== "momo") {
-                      setMomoAmount("");
-                    }
+                    setMomoAmount("");
                   }}
                   className={`flex flex-col items-center gap-2 py-4 rounded-lg font-medium text-sm transition-colors border-2 ${
                     selectedMethod === "card"
