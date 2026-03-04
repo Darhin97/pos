@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { CART_ITEMS, CUSTOMERS } from "@/lib/data";
 import { Customer } from "@/lib/types";
@@ -24,6 +24,21 @@ export default function OrderReviewPage() {
     amountGiven?: number;
     change?: number;
   } | null>(null);
+  const [momoAmount, setMomoAmount] = useState("");
+
+  // Load customer from localStorage on mount
+  useEffect(() => {
+    const savedCustomer = localStorage.getItem("orderCustomer");
+    if (savedCustomer) {
+      try {
+        const customer = JSON.parse(savedCustomer);
+        setSelectedCustomer(customer);
+        setCustomerSearch(customer.name);
+      } catch (error) {
+        console.error("Failed to parse customer data:", error);
+      }
+    }
+  }, []);
 
   const cartItems = CART_ITEMS;
 
@@ -175,9 +190,13 @@ export default function OrderReviewPage() {
 
                 {/* Momo */}
                 <button
-                  onClick={() =>
-                    setSelectedMethod(selectedMethod === "momo" ? null : "momo")
-                  }
+                  onClick={() => {
+                    const newMethod = selectedMethod === "momo" ? null : "momo";
+                    setSelectedMethod(newMethod);
+                    if (newMethod !== "momo") {
+                      setMomoAmount("");
+                    }
+                  }}
                   className={`flex flex-col items-center gap-2 py-4 rounded-lg font-medium text-sm transition-colors border-2 ${
                     selectedMethod === "momo"
                       ? "bg-amber-500 border-amber-500 text-white"
@@ -190,9 +209,13 @@ export default function OrderReviewPage() {
 
                 {/* Credit Card */}
                 <button
-                  onClick={() =>
-                    setSelectedMethod(selectedMethod === "card" ? null : "card")
-                  }
+                  onClick={() => {
+                    const newMethod = selectedMethod === "card" ? null : "card";
+                    setSelectedMethod(newMethod);
+                    if (newMethod !== "momo") {
+                      setMomoAmount("");
+                    }
+                  }}
                   className={`flex flex-col items-center gap-2 py-4 rounded-lg font-medium text-sm transition-colors border-2 ${
                     selectedMethod === "card"
                       ? "bg-slate-700 border-slate-500 text-white"
@@ -204,11 +227,46 @@ export default function OrderReviewPage() {
                 </button>
               </div>
 
+              {/* Momo amount input — shown only when Momo is selected */}
+              {selectedMethod === "momo" && (
+                <div>
+                  <label className="block text-sm font-medium text-slate-900 mb-2">
+                    Amount received (Momo)
+                  </label>
+                  <div className="flex items-center border border-[#6366f1] rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-[#6366f1]/20">
+                    <span className="pl-4 pr-2 text-sm text-gray-500 shrink-0">GH₵</span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={momoAmount}
+                      onChange={(e) => setMomoAmount(e.target.value)}
+                      placeholder="0.00"
+                      className="flex-1 py-3 pr-4 text-sm text-right text-slate-900 outline-none bg-transparent"
+                    />
+                  </div>
+                </div>
+              )}
+
               {/* Complete Sale — shown for Momo or Card */}
               {selectedMethod && (
                 <button
                   onClick={() => {
-                    setReceiptPayment({ method: selectedMethod });
+                    // For momo, validate amount is entered
+                    if (selectedMethod === "momo") {
+                      const amount = parseFloat(momoAmount);
+                      if (!amount || amount <= 0) {
+                        alert("Please enter the momo amount received");
+                        return;
+                      }
+                      setReceiptPayment({
+                        method: selectedMethod,
+                        amountGiven: amount,
+                        change: amount - total
+                      });
+                    } else {
+                      setReceiptPayment({ method: selectedMethod });
+                    }
                     setIsReceiptOpen(true);
                   }}
                   className="w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold text-sm transition-colors flex items-center justify-center gap-2"
@@ -218,38 +276,59 @@ export default function OrderReviewPage() {
                 </button>
               )}
 
-              {/* Customer field */}
-              <div className="relative">
-                <Icon
-                  name="User"
-                  size={16}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10"
-                />
-                <input
-                  type="text"
-                  value={customerSearch}
-                  onChange={(e) => setCustomerSearch(e.target.value)}
-                  placeholder="Add a customer"
-                  className="w-full pl-9 pr-3 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-slate-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 transition-colors"
-                />
-                <CustomerDropdown
-                  customers={filteredCustomers}
-                  searchQuery={customerSearch}
-                  onSelectCustomer={handleSelectCustomer}
-                  onAddNewCustomer={handleAddNewCustomer}
-                />
-              </div>
-
-              {selectedCustomer && (
-                <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg">
+              {/* Customer field - show badge if selected, otherwise show input */}
+              {selectedCustomer ? (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5 flex items-center gap-3">
+                  {/* Avatar with initials */}
+                  <div className="w-10 h-10 rounded bg-amber-500 flex items-center justify-center text-white font-semibold text-sm shrink-0">
+                    {selectedCustomer.name
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                      .toUpperCase()
+                      .slice(0, 2)}
+                  </div>
+                  {/* Customer info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-semibold text-gray-900">
+                      {selectedCustomer.name}
+                    </div>
+                    <div className="text-xs text-gray-600 mt-0.5">
+                      {selectedCustomer.customerId} | {selectedCustomer.email}
+                    </div>
+                  </div>
+                  {/* Delete icon */}
+                  <button
+                    onClick={() => {
+                      setSelectedCustomer(null);
+                      setCustomerSearch("");
+                      localStorage.removeItem("orderCustomer");
+                    }}
+                    className="p-1.5 hover:bg-amber-100 rounded transition-colors text-gray-500 hover:text-gray-700 shrink-0"
+                  >
+                    <Icon name="Trash2" size={16} />
+                  </button>
+                </div>
+              ) : (
+                <div className="relative">
                   <Icon
-                    name="UserCheck"
-                    size={15}
-                    className="text-blue-600 shrink-0"
+                    name="User"
+                    size={16}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10"
                   />
-                  <span className="text-sm text-blue-700 font-medium">
-                    {selectedCustomer.name}
-                  </span>
+                  <input
+                    type="text"
+                    value={customerSearch}
+                    onChange={(e) => setCustomerSearch(e.target.value)}
+                    placeholder="Add a customer"
+                    className="w-full pl-9 pr-3 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-slate-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 transition-colors"
+                  />
+                  <CustomerDropdown
+                    customers={filteredCustomers}
+                    searchQuery={customerSearch}
+                    onSelectCustomer={handleSelectCustomer}
+                    onAddNewCustomer={handleAddNewCustomer}
+                  />
                 </div>
               )}
             </div>

@@ -37,12 +37,25 @@ export const AddCustomerModal = ({
   const [postalCode, setPostalCode] = useState("");
   const [country, setCountry] = useState("");
 
+  // Helper function to capitalize first letter of each word
+  const capitalizeWords = (str: string) => {
+    return str
+      .split(" ")
+      .filter((word) => word.length > 0)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
+  };
+
   // Update first and last name when initialName changes
   useEffect(() => {
     if (initialName) {
-      const nameParts = initialName.trim().split(" ");
-      setFirstName(nameParts[0] || "");
-      setLastName(nameParts.slice(1).join(" ") || "");
+      const nameParts = initialName.trim().split(" ").filter((part) => part.length > 0);
+      const firstName = nameParts[0] || "";
+      const lastName = nameParts.slice(1).join(" ") || "";
+
+      // Capitalize first and last names
+      setFirstName(capitalizeWords(firstName));
+      setLastName(capitalizeWords(lastName));
     }
   }, [initialName]);
 

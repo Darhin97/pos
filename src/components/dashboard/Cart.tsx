@@ -32,6 +32,8 @@ export const Cart = () => {
   const [newCustomerName, setNewCustomerName] = useState("");
   const [cartItems, setCartItems] = useState<CartItem[]>(CART_ITEMS);
   const [heldSales, setHeldSales] = useState<HeldSale[]>([]);
+  const [isReplaceCartModalOpen, setIsReplaceCartModalOpen] = useState(false);
+  const [pendingQuoteData, setPendingQuoteData] = useState<Quote | null>(null);
 
   useEffect(() => {
     // Check for retrieved quote data
@@ -39,38 +41,51 @@ export const Cart = () => {
     if (retrievedQuoteData) {
       const quote: Quote = JSON.parse(retrievedQuoteData);
 
-      // Convert quote items to cart items
-      const quoteCartItems: CartItem[] = quote.items.map((item) => ({
-        id: item.id,
-        name: item.name,
-        price: item.price,
-        category: "", // Quote items don't have category, can be empty
-        size: "M", // Default size, can be updated if quote items have size
-        color: null,
-        qty: item.qty,
-        image: "", // Quote items don't have image, can be empty or fetch from products
-      }));
-
-      // Load quote data into cart
-      setCartItems(quoteCartItems);
-      setSelectedCustomer(quote.customer);
-      setCustomerSearch(quote.customer.name);
-
-      // Load discount and promo code if available
-      if (quote.discount) {
-        setDiscount(quote.discount);
-      }
-      if (quote.promoCode) {
-        setPromoCode(quote.promoCode);
+      // Check if cart has existing items
+      if (cartItems.length > 0) {
+        // Show confirmation modal
+        setPendingQuoteData(quote);
+        setIsReplaceCartModalOpen(true);
+      } else {
+        // Load quote directly if cart is empty
+        loadQuoteIntoCart(quote);
       }
 
       // Clear the retrieved quote from localStorage
       localStorage.removeItem("retrievedQuote");
-
-      // Show a notification (you could use a toast library)
-      alert(`Quote ${quote.quoteNumber} loaded into cart`);
     }
   }, []);
+
+  // Function to load quote data into cart
+  const loadQuoteIntoCart = (quote: Quote) => {
+    // Convert quote items to cart items
+    const quoteCartItems: CartItem[] = quote.items.map((item) => ({
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      category: "", // Quote items don't have category, can be empty
+      size: "M", // Default size, can be updated if quote items have size
+      color: null,
+      qty: item.qty,
+      image: "", // Quote items don't have image, can be empty or fetch from products
+    }));
+
+    // Load quote data into cart
+    setCartItems(quoteCartItems);
+    setSelectedCustomer(quote.customer);
+    setCustomerSearch(quote.customer.name);
+
+    // Load discount and promo code if available
+    if (quote.discount) {
+      setDiscount(quote.discount);
+    }
+    if (quote.promoCode) {
+      setPromoCode(quote.promoCode);
+    }
+
+    // Show a notification (you could use a toast library)
+    alert(`Quote ${quote.quoteNumber} loaded into cart`);
+  };
 
   const totalItems = cartItems.reduce((sum, item) => sum + item.qty, 0);
   const subtotal = cartItems.reduce(
@@ -262,9 +277,13 @@ export const Cart = () => {
                 <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-20 overflow-hidden">
                   <button
                     onClick={() => {
-                      // Clear cart logic
                       setIsMoreActionsOpen(false);
-                      alert("Clear cart clicked");
+                      // Clear cart and reset all related state
+                      setCartItems([]);
+                      setDiscount(null);
+                      setPromoCode(null);
+                      setSelectedCustomer(null);
+                      setCustomerSearch("");
                     }}
                     className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
                   >
@@ -288,28 +307,63 @@ export const Cart = () => {
         </div>
       </div>
 
-      {/* Add customer input */}
+      {/* Add customer input or customer badge */}
       <div className="px-6 pt-4 pb-3 shrink-0">
-        <div className="relative">
-          <Icon
-            name="User"
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10"
-          />
-          <input
-            type="text"
-            value={customerSearch}
-            onChange={(e) => setCustomerSearch(e.target.value)}
-            placeholder="Add a customer"
-            className="w-full pl-9 pr-3 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 transition-colors"
-          />
-          <CustomerDropdown
-            customers={filteredCustomers}
-            searchQuery={customerSearch}
-            onSelectCustomer={handleSelectCustomer}
-            onAddNewCustomer={handleAddNewCustomer}
-          />
-        </div>
+        {selectedCustomer ? (
+          // Customer details badge
+          <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5 flex items-center gap-3">
+            {/* Avatar with initials */}
+            <div className="w-10 h-10 rounded bg-amber-500 flex items-center justify-center text-white font-semibold text-sm shrink-0">
+              {selectedCustomer.name
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
+                .toUpperCase()
+                .slice(0, 2)}
+            </div>
+            {/* Customer info */}
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-semibold text-gray-900">
+                {selectedCustomer.name}
+              </div>
+              <div className="text-xs text-gray-600 mt-0.5">
+                {selectedCustomer.customerId} | {selectedCustomer.email}
+              </div>
+            </div>
+            {/* Delete icon */}
+            <button
+              onClick={() => {
+                setSelectedCustomer(null);
+                setCustomerSearch("");
+              }}
+              className="p-1.5 hover:bg-amber-100 rounded transition-colors text-gray-500 hover:text-gray-700 shrink-0"
+            >
+              <Icon name="Trash2" size={16} />
+            </button>
+          </div>
+        ) : (
+          // Customer search input
+          <div className="relative">
+            <Icon
+              name="User"
+              size={16}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10"
+            />
+            <input
+              type="text"
+              value={customerSearch}
+              onChange={(e) => setCustomerSearch(e.target.value)}
+              placeholder="Add a customer"
+              className="w-full pl-9 pr-3 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 transition-colors"
+            />
+            <CustomerDropdown
+              customers={filteredCustomers}
+              searchQuery={customerSearch}
+              onSelectCustomer={handleSelectCustomer}
+              onAddNewCustomer={handleAddNewCustomer}
+            />
+          </div>
+        )}
       </div>
 
       {/* Cart items */}
@@ -388,7 +442,15 @@ export const Cart = () => {
 
         {/* Pay button */}
         <button
-          onClick={() => router.push("/dashboard/orders/review")}
+          onClick={() => {
+            // Save customer to localStorage for review page
+            if (selectedCustomer) {
+              localStorage.setItem("orderCustomer", JSON.stringify(selectedCustomer));
+            } else {
+              localStorage.removeItem("orderCustomer");
+            }
+            router.push("/dashboard/orders/review");
+          }}
           className="w-full py-4 bg-[#6366f1] hover:bg-[#5558e3] text-white rounded-lg font-semibold transition-colors flex items-center justify-between px-6 text-lg"
         >
           <span>Pay</span>
@@ -451,6 +513,53 @@ export const Cart = () => {
           router.push("/dashboard/orders/quote-confirmation");
         }}
       />
+
+      {/* Replace Cart Confirmation Modal */}
+      {isReplaceCartModalOpen && pendingQuoteData && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
+            <div className="p-6">
+              <div className="flex items-start gap-4 mb-4">
+                <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
+                  <Icon name="AlertTriangle" size={24} className="text-amber-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                    Replace Cart Items?
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    You have existing items in your cart. Loading this quote will replace all current items. Do you want to continue?
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setIsReplaceCartModalOpen(false);
+                    setPendingQuoteData(null);
+                  }}
+                  className="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium text-sm transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    if (pendingQuoteData) {
+                      loadQuoteIntoCart(pendingQuoteData);
+                    }
+                    setIsReplaceCartModalOpen(false);
+                    setPendingQuoteData(null);
+                  }}
+                  className="flex-1 px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-medium text-sm transition-colors"
+                >
+                  Replace Cart
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </aside>
   );
 };
