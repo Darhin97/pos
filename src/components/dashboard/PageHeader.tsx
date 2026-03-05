@@ -25,7 +25,7 @@ export const PageHeader = ({ title, subtitle, breadcrumb }: PageHeaderProps) => 
       <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-5">
         <h2 className="text-base font-medium text-slate-900">List Product</h2>
         <div className="flex gap-2 flex-1 xl:flex-none">
-          <div className="relative flex-1 xl:w-[640px]">
+          <div className="relative flex-1 lg:w-[450px] xl:w-[450px]">
             <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center text-gray-400">
               <Icon name="Search" size={20} />
             </div>

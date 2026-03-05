@@ -26,7 +26,6 @@ export default function ProductsPage() {
   const [supplier, setSupplier] = useState("");
   const [brand, setBrand] = useState("");
   const [status, setStatus] = useState("Active");
-  const [orderNumber, setOrderNumber] = useState("");
   const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
   const [products, setProducts] = useState(PRODUCTS);
 
@@ -147,7 +146,7 @@ export default function ProductsPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {/* Supplier */}
             <div>
               <label className="block text-xs font-medium text-slate-900 mb-1.5">
@@ -204,20 +203,6 @@ export default function ProductsPage() {
                   <SelectItem value="All">All</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-
-            {/* Purchase order number */}
-            <div>
-              <label className="block text-xs font-medium text-slate-900 mb-1.5">
-                Purchase order number
-              </label>
-              <Input
-                type="text"
-                placeholder="Enter order numbers"
-                value={orderNumber}
-                onChange={(e) => setOrderNumber(e.target.value)}
-                className="h-9 text-sm"
-              />
             </div>
           </div>
 

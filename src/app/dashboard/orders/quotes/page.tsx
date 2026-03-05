@@ -153,7 +153,7 @@ export default function QuotesPage() {
             </div>
 
             {/* Customer */}
-            <div className="flex flex-col gap-1 flex-1 min-w-[180px]">
+            <div className="flex flex-col gap-1 w-1/3 lg:w-1/4 min-w-[120px]">
               <label className="text-xs font-medium text-gray-600">Customer</label>
               <div className="relative flex items-center">
                 <Icon
@@ -173,7 +173,7 @@ export default function QuotesPage() {
             </div>
 
             {/* Quote number */}
-            <div className="flex flex-col gap-1 flex-1 min-w-[180px]">
+            <div className="flex flex-col gap-1 w-1/3 lg:w-1/4 min-w-[120px]">
               <label className="text-xs font-medium text-gray-600">Quote</label>
               <div className="relative flex items-center">
                 <Icon
