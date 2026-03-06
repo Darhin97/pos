@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
 import { Icon } from "@/components/shared/Icon";
 import { SearchableSelect } from "@/components/shared/SearchableSelect";
 import { Button } from "@/components/ui/button";
@@ -29,17 +29,26 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { PRODUCTS } from "@/lib/data";
+import type { Product } from "@/lib/types";
 
-export default function AddProductPage() {
+export default function EditProductPage() {
   const router = useRouter();
+  const params = useParams();
+  const productId = parseInt(params.id as string);
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [productNotFound, setProductNotFound] = useState(false);
   const [productType, setProductType] = useState("standard");
   const [productName, setProductName] = useState("");
+  const [description, setDescription] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
   const [images, setImages] = useState<File[]>([]);
+  const [existingImageUrl, setExistingImageUrl] = useState<string>("");
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [skuCodeType, setSkuCodeType] = useState("auto-generated");
-  const [skuCode, setSkuCode] = useState("10029");
+  const [skuCode, setSkuCode] = useState("");
   const [availableToSell, setAvailableToSell] = useState("");
 
   // Price calculation state
@@ -105,6 +114,94 @@ export default function AddProductPage() {
   const [pendingAttributeName, setPendingAttributeName] = useState("");
   const [pendingAttributeId, setPendingAttributeId] = useState<number | null>(null);
 
+  // Load product data on mount
+  useEffect(() => {
+    const loadProduct = () => {
+      // Get custom products from localStorage
+      const customProducts = JSON.parse(localStorage.getItem('customProducts') || '[]');
+      const allProducts = [...PRODUCTS, ...customProducts];
+
+      // Find the product by ID
+      const product = allProducts.find(p => p.id === productId);
+
+      if (!product) {
+        setProductNotFound(true);
+        setIsLoading(false);
+        return;
+      }
+
+      // Populate form fields with product data
+      setProductName(product.name);
+      setDescription(product._metadata?.description || "");
+      setSelectedTags(product._metadata?.tags || []);
+      setExistingImageUrl(product.image);
+
+      // Set brand
+      const productBrand = product.brand;
+      if (productBrand) {
+        const brandValue = productBrand.toLowerCase().replace(/\s+/g, "-");
+        // Check if brand exists in options, if not add it
+        if (!brands.find(b => b.value === brandValue)) {
+          setBrands(prev => [...prev, { value: brandValue, label: productBrand }]);
+        }
+        setBrand(brandValue);
+      }
+
+      // Set category
+      const productCategory = product.category;
+      if (productCategory) {
+        const categoryValue = productCategory.toLowerCase().replace(/\s+/g, "-");
+        if (!categories.find(c => c.value === categoryValue)) {
+          setCategories(prev => [...prev, { value: categoryValue, label: productCategory }]);
+        }
+        setCategory(categoryValue);
+      }
+
+      // Set product type and related fields
+      const metadata = product._metadata;
+      if (metadata?.productType) {
+        setProductType(metadata.productType);
+
+        if (metadata.productType === "standard") {
+          setSkuCode(product.sku || "");
+          setAvailableToSell(product.stock?.toString() || "0");
+          setSupplierPrice(metadata.supplierPrice?.toFixed(2) || "0.00");
+          setMarkup(metadata.markup?.toFixed(2) || "0.00");
+          setMargin(metadata.margin?.toFixed(2) || "0.00");
+          setRetailPrice(product.price.toFixed(2));
+        } else if (metadata.productType === "variant") {
+          setSkuCode(product.sku?.replace("-BASE", "") || "");
+          // Restore attributes
+          if (metadata.attributes) {
+            setAttributes(metadata.attributes);
+          }
+          // Restore variants
+          if (metadata.variantData) {
+            setVariants(metadata.variantData);
+          }
+        }
+      } else {
+        // Product doesn't have metadata (likely from mock data)
+        setProductType("standard");
+        setSkuCode(product.sku || "");
+        setAvailableToSell(product.stock?.toString() || "0");
+        setRetailPrice(product.price.toFixed(2));
+      }
+
+      setIsLoading(false);
+    };
+
+    loadProduct();
+  }, [productId]);
+
+  // Redirect if product not found
+  useEffect(() => {
+    if (productNotFound) {
+      alert("Product not found. Redirecting to products list.");
+      router.push('/dashboard/products');
+    }
+  }, [productNotFound, router]);
+
   const handleAddTag = (tag: string) => {
     if (tag && !selectedTags.includes(tag)) {
       setSelectedTags([...selectedTags, tag]);
@@ -119,11 +216,19 @@ export default function AddProductPage() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       setImages([...images, ...Array.from(e.target.files)]);
+      // Clear existing image when new one is uploaded
+      if (images.length === 0 && e.target.files.length > 0) {
+        setExistingImageUrl("");
+      }
     }
   };
 
   const handleRemoveImage = (index: number) => {
     setImages(images.filter((_, i) => i !== index));
+  };
+
+  const handleRemoveExistingImage = () => {
+    setExistingImageUrl("");
   };
 
   const handleDragStart = (index: number) => {
@@ -148,7 +253,6 @@ export default function AddProductPage() {
   };
 
   const handleAddBrand = (brandName: string) => {
-    // Open modal with the searched brand name
     setPendingBrandName(brandName);
     setIsAddBrandModalOpen(true);
   };
@@ -170,7 +274,6 @@ export default function AddProductPage() {
   };
 
   const handleAddCategory = (categoryName: string) => {
-    // Open modal with the searched category name
     setPendingCategoryName(categoryName);
     setIsAddCategoryModalOpen(true);
   };
@@ -213,7 +316,6 @@ export default function AddProductPage() {
   };
 
   const handleAddNewAttributeType = (id: number, attributeName: string) => {
-    // Open modal with the searched attribute name
     setPendingAttributeId(id);
     setPendingAttributeName(attributeName);
     setIsAddAttributeModalOpen(true);
@@ -287,7 +389,7 @@ export default function AddProductPage() {
     const combinations = cartesian(...valueArrays);
 
     // Generate variants from combinations
-    const baseSkuCode = 10007;
+    const baseSkuCode = parseInt(skuCode) || 10007;
     const newVariants = combinations.map((combo, index) => {
       const existingVariant = variants.find((v) => v.name === combo.join(" / "));
       return (
@@ -320,7 +422,6 @@ export default function AddProductPage() {
 
   const calculateFromMargin = (supplier: number, marginValue: number) => {
     if (marginValue >= 100) {
-      // Margin can't be 100% or more
       setMargin("99.99");
       return;
     }
@@ -373,8 +474,8 @@ export default function AddProductPage() {
     }
   };
 
-  // Save product handler
-  const handleSaveProduct = async () => {
+  // Update product handler
+  const handleUpdateProduct = async () => {
     // 1. Validate required fields
     if (!productName.trim()) {
       alert("Please enter a product name");
@@ -409,8 +510,8 @@ export default function AddProductPage() {
       }
     }
 
-    // 2. Convert first image to base64 if available
-    let imageData = "https://cdn.pixabay.com/photo/2016/12/06/09/31/blank-1886008_1280.png";
+    // 2. Handle image - use new image if uploaded, otherwise keep existing
+    let imageData = existingImageUrl;
     if (images.length > 0) {
       try {
         imageData = await new Promise<string>((resolve, reject) => {
@@ -424,14 +525,19 @@ export default function AddProductPage() {
       }
     }
 
-    // 3. Build product object
-    const newProduct = {
-      id: Date.now(), // Temporary ID generation
+    // If no image at all, use placeholder
+    if (!imageData) {
+      imageData = "https://cdn.pixabay.com/photo/2016/12/06/09/31/blank-1886008_1280.png";
+    }
+
+    // 3. Build updated product object
+    const updatedProduct: Product = {
+      id: productId, // Keep the same ID
       name: productName,
       brand: brands.find(b => b.value === brand)?.label || "",
       category: categories.find(c => c.value === category)?.label || "",
       sku: productType === "standard" ? skuCode : `${skuCode}-BASE`,
-      supplier: "N/A", // Supplier dropdown doesn't have state binding yet
+      supplier: "N/A",
       image: imageData,
       price: productType === "standard"
         ? parseFloat(retailPrice)
@@ -440,49 +546,56 @@ export default function AddProductPage() {
         ? (availableToSell ? parseInt(availableToSell) : 0)
         : variants.reduce((sum, v) => sum + (parseInt(v.quantity) || 0), 0),
       active: true,
-      createdAt: new Date().toLocaleDateString(),
+      createdAt: new Date().toLocaleDateString(), // Keep original or use existing
       variants: productType === "variant" ? variants.length : undefined,
       sizes: [],
       colors: [],
-      // Store additional data for future editing
       _metadata: {
-        productType,
+        productType: productType as "standard" | "variant",
         tags: selectedTags,
-        description: "", // Would need to add state for this
+        description: description,
         supplierPrice: parseFloat(supplierPrice),
         markup: parseFloat(markup),
         margin: parseFloat(margin),
-        variantData: productType === "variant" ? variants : null,
-        attributes: productType === "variant" ? attributes : null,
+        variantData: productType === "variant" ? variants : undefined,
+        attributes: productType === "variant" ? attributes : undefined,
       }
     };
 
     // 4. Get existing products from localStorage
     const savedProducts = JSON.parse(localStorage.getItem('customProducts') || '[]');
 
-    // 5. Add new product
-    savedProducts.push(newProduct);
+    // 5. Find and update the product
+    const productIndex = savedProducts.findIndex((p: Product) => p.id === productId);
 
-    // 6. Save back to localStorage
-    localStorage.setItem('customProducts', JSON.stringify(savedProducts));
+    if (productIndex !== -1) {
+      // Update existing product
+      savedProducts[productIndex] = updatedProduct;
+      localStorage.setItem('customProducts', JSON.stringify(savedProducts));
+    } else {
+      // Product might be from mock data - add as new custom product
+      savedProducts.push(updatedProduct);
+      localStorage.setItem('customProducts', JSON.stringify(savedProducts));
+    }
 
-    // 7. Navigate back to products list
+    // 6. Navigate back to products list
     router.push('/dashboard/products');
   };
 
-  // Initialize with one attribute when variant product is selected
-  React.useEffect(() => {
-    if (productType === "variant" && attributes.length === 0) {
-      handleAddAttribute();
-    }
-  }, [productType]);
-
   // Auto-generate variants when attributes change
-  React.useEffect(() => {
-    if (productType === "variant") {
+  useEffect(() => {
+    if (productType === "variant" && attributes.length > 0) {
       generateVariants();
     }
   }, [attributes]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <p className="text-gray-600">Loading product...</p>
+      </div>
+    );
+  }
 
   return (
     <TooltipProvider>
@@ -491,11 +604,11 @@ export default function AddProductPage() {
       <div className="flex-none border-b border-gray-200 bg-gray-50">
         <div className="px-8 py-6">
           <h1 className="text-2xl font-semibold text-slate-900 mb-2">
-            New product
+            Edit product
           </h1>
           <div className="flex items-center justify-between">
             <p className="text-sm text-gray-600">
-              Add, view and edit your products all in one place.{" "}
+              Edit product details and save your changes.{" "}
               <a href="#" className="text-violet-600 hover:underline">
                 Need help?
               </a>
@@ -509,10 +622,10 @@ export default function AddProductPage() {
                 Cancel
               </Button>
               <Button
-                onClick={handleSaveProduct}
+                onClick={handleUpdateProduct}
                 className="h-9 px-6 bg-violet-600 hover:bg-violet-700 text-white"
               >
-                Save
+                Update
               </Button>
             </div>
           </div>
@@ -563,6 +676,8 @@ export default function AddProductPage() {
                 <Textarea
                   id="description"
                   placeholder="Enter product description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
                   className="mt-1.5 min-h-[100px]"
                 />
               </div>
@@ -655,6 +770,26 @@ export default function AddProductPage() {
                     </label>
                   </div>
 
+                  {/* Show existing image */}
+                  {existingImageUrl && images.length === 0 && (
+                    <div className="grid grid-cols-4 gap-4 mt-4">
+                      <div className="relative group aspect-square rounded-lg overflow-hidden border border-gray-200">
+                        <img
+                          src={existingImageUrl}
+                          alt="Current product"
+                          className="w-full h-full object-cover"
+                        />
+                        <button
+                          onClick={handleRemoveExistingImage}
+                          className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                        >
+                          <Icon name="X" size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Show new images */}
                   {images.length > 0 && (
                     <div className="grid grid-cols-4 gap-4 mt-4">
                       {images.map((image, index) => (
@@ -909,7 +1044,7 @@ export default function AddProductPage() {
                                 }
                               }}
                             />
-                            {index === attributes.length - 1 && (
+                            {index === attributes.length - 1 && attributes.length > 1 && (
                               <Button
                                 type="button"
                                 variant="ghost"

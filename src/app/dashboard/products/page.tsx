@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/shared/Icon";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -17,6 +17,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { PRODUCTS } from "@/lib/data";
 import Image from "next/image";
+import { VariantDetailsPanel } from "@/components/dashboard/VariantDetailsPanel";
 
 export default function ProductsPage() {
   const router = useRouter();
@@ -27,7 +28,14 @@ export default function ProductsPage() {
   const [brand, setBrand] = useState("");
   const [status, setStatus] = useState("Active");
   const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
+  const [expandedProducts, setExpandedProducts] = useState<number[]>([]);
   const [products, setProducts] = useState(PRODUCTS);
+
+  // Load custom products from localStorage when component mounts (client-side only)
+  React.useEffect(() => {
+    const customProducts = JSON.parse(localStorage.getItem('customProducts') || '[]');
+    setProducts([...PRODUCTS, ...customProducts]);
+  }, []);
 
   const toggleProductSelection = (id: number) => {
     setSelectedProducts((prev) =>
@@ -41,6 +49,12 @@ export default function ProductsPage() {
     } else {
       setSelectedProducts(products.map((p) => p.id));
     }
+  };
+
+  const toggleProductExpansion = (id: number) => {
+    setExpandedProducts((prev) =>
+      prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]
+    );
   };
 
   const toggleProductActive = (id: number) => {
@@ -220,7 +234,9 @@ export default function ProductsPage() {
       <div className="flex-none px-8 pb-4">
         <ContentContainer>
         <div className="flex items-center justify-between py-3 border-b border-gray-200">
-        <p className="text-sm text-gray-600">Displaying 8 active products</p>
+        <p className="text-sm text-gray-600">
+          Displaying {products.filter(p => p.active !== false).length} active products
+        </p>
         <button className="text-sm text-violet-600 hover:text-violet-700 font-medium flex items-center gap-1.5">
           <Icon name="Download" size={16} />
           Export list...
@@ -270,77 +286,112 @@ export default function ProductsPage() {
               <th className="w-12 px-4 py-3"></th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-100">
-            {products.map((product) => (
-              <tr
-                key={product.id}
-                className="hover:bg-gray-50 transition-colors group"
-              >
-                <td className="px-4 py-3">
-                  <input
-                    type="checkbox"
-                    checked={selectedProducts.includes(product.id)}
-                    onChange={() => toggleProductSelection(product.id)}
-                    className="w-4 h-4 rounded border-gray-300 text-violet-600 focus:ring-violet-500"
-                  />
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-3">
-                    <button className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-gray-600">
-                      <Icon name="ChevronRight" size={16} />
-                    </button>
-                    <div className="w-10 h-10 rounded-md bg-gray-100 overflow-hidden shrink-0">
-                      <Image
-                        src={product.image}
-                        alt={product.name}
-                        width={40}
-                        height={40}
-                        className="w-full h-full object-cover"
+          <tbody className="bg-white">
+            {products.map((product) => {
+              const isExpanded = expandedProducts.includes(product.id);
+              const hasVariants = product.variants && product.variants > 0;
+              const variantData = product._metadata?.variantData || [];
+
+              return (
+                <React.Fragment key={product.id}>
+                  <tr className="hover:bg-gray-50 transition-colors group border-b border-gray-100">
+                    <td className="px-4 py-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedProducts.includes(product.id)}
+                        onChange={() => toggleProductSelection(product.id)}
+                        className="w-4 h-4 rounded border-gray-300 text-violet-600 focus:ring-violet-500"
                       />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-slate-900 truncate">
-                        {product.name}
-                      </p>
-                      <p className="text-xs text-gray-500">{product.sku}</p>
-                      {product.variants && (
-                        <p className="text-xs text-gray-500">
-                          {product.variants} variants
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </td>
-                <td className="px-4 py-3 text-sm text-gray-700">
-                  {product.brand || "-"}
-                </td>
-                <td className="px-4 py-3">
-                  <span className="text-sm text-blue-600 hover:underline cursor-pointer">
-                    {product.supplier}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-sm text-gray-700 text-center">
-                  {product.stock}
-                </td>
-                <td className="px-4 py-3 text-sm text-gray-700">
-                  GH₵{product.price.toFixed(2)}
-                </td>
-                <td className="px-4 py-3">
-                  <Switch
-                    checked={product.active}
-                    onCheckedChange={() => toggleProductActive(product.id)}
-                  />
-                </td>
-                <td className="px-4 py-3 text-sm text-gray-700">
-                  {product.createdAt}
-                </td>
-                <td className="px-4 py-3">
-                  <button className="text-violet-600 hover:text-violet-700">
-                    <Icon name="Pencil" size={16} />
-                  </button>
-                </td>
-              </tr>
-            ))}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        {hasVariants ? (
+                          <button
+                            onClick={() => toggleProductExpansion(product.id)}
+                            className="text-gray-400 hover:text-gray-600 transition-all"
+                          >
+                            <Icon
+                              name="ChevronRight"
+                              size={16}
+                              className={`transform transition-transform ${
+                                isExpanded ? "rotate-90" : ""
+                              }`}
+                            />
+                          </button>
+                        ) : (
+                          <div className="w-4"></div>
+                        )}
+                        <div className="w-10 h-10 rounded-md bg-gray-100 overflow-hidden shrink-0">
+                          <Image
+                            src={product.image}
+                            alt={product.name}
+                            width={40}
+                            height={40}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-slate-900 truncate">
+                            {product.name}
+                          </p>
+                          <p className="text-xs text-gray-500">{product.sku}</p>
+                          {product.variants && (
+                            <p className="text-xs text-gray-500">
+                              {product.variants} variants
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-700">
+                      {product.brand || "-"}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="text-sm text-blue-600 hover:underline cursor-pointer">
+                        {product.supplier}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-700 text-center">
+                      {product.stock}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-700">
+                      GH₵{product.price.toFixed(2)}
+                    </td>
+                    <td className="px-4 py-3">
+                      <Switch
+                        checked={product.active}
+                        onCheckedChange={() => toggleProductActive(product.id)}
+                      />
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-700">
+                      {product.createdAt}
+                    </td>
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() => router.push(`/dashboard/products/${product.id}/edit`)}
+                        className="text-violet-600 hover:text-violet-700 hover:bg-violet-50 rounded p-1.5 transition-all duration-150 hover:scale-110"
+                        title="Edit product"
+                      >
+                        <Icon name="Pencil" size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                  {isExpanded && hasVariants && variantData.length > 0 && (
+                    <tr>
+                      <td colSpan={9} className="p-0">
+                        <VariantDetailsPanel
+                          productName={product.name}
+                          variants={variantData}
+                          onDelete={() => console.log("Delete product:", product.id)}
+                          onEdit={() => router.push(`/dashboard/products/${product.id}/edit`)}
+                          onPrintLabels={() => console.log("Print labels:", product.id)}
+                        />
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
+              );
+            })}
           </tbody>
         </table>
         </ContentContainer>

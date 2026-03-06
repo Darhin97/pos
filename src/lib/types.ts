@@ -15,6 +15,29 @@ export interface Product {
   active?: boolean;
   createdAt?: string;
   variants?: number;
+  // Metadata for variant products
+  _metadata?: {
+    productType?: "standard" | "variant";
+    tags?: string[];
+    description?: string;
+    supplierPrice?: number;
+    markup?: number;
+    margin?: number;
+    variantData?: Array<{
+      id: number;
+      name: string;
+      skuCode: string;
+      quantity: string;
+      supplierPrice: string;
+      retailPrice: string;
+      enabled: boolean;
+    }>;
+    attributes?: Array<{
+      id: number;
+      name: string;
+      values: string[];
+    }>;
+  };
 }
 
 export interface CartItem {
